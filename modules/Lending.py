@@ -110,7 +110,8 @@ def notify_summary(sleep_time):
 def notify_new_loans(sleep_time):
     global loans_provided
     try:
-        new_provided = api.return_active_loans()['provided']
+        # new_provided = api.return_active_loans()['provided']
+        new_provided = api.active_offers()
         if loans_provided:
             get_id_set = lambda loans: set([x['id'] for x in loans]) # lambda to return a set of ids from the api result
             loans_amount = {}
@@ -118,14 +119,14 @@ def notify_new_loans(sleep_time):
             for loan_id in get_id_set(new_provided) - get_id_set(loans_provided):
                 loan = [x for x in new_provided if x['id'] == loan_id][0]
                 # combine loans with the same rate
-                k = 'c'+loan['currency']+'r'+loan['rate']+'d'+str(loan['duration'])
-                loans_amount[k] = float(loan['amount']) + (loans_amount[k] if k in loans_amount else 0)
+                k = 'c'+loan['currency']+'r'+loan['rate']+'d'+str(loan['period'])
+                loans_amount[k] = float(loan['original_amount']) + (loans_amount[k] if k in loans_amount else 0)
                 loans_info[k] = loan
             # send notifications with the grouped info
             for k, amount in loans_amount.iteritems():
                 loan = loans_info[k]
                 t = "{0} {1} loan filled for {2} days at a rate of {3:.4f}%"
-                text = t.format(amount, loan['currency'], loan['duration'], float(loan['rate']) * 100)
+                text = t.format(amount, loan['currency'], loan['period'], float(loan['rate']) * 100)
                 log.notify(text, notify_conf)
         loans_provided = new_provided
     except Exception as ex:

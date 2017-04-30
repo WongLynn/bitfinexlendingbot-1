@@ -10,7 +10,8 @@ from urllib2 import URLError
 from decimal import Decimal
 
 from modules.Logger import Logger
-from modules.Poloniex import Poloniex, PoloniexApiError
+# from modules.Poloniex import Poloniex, PoloniexApiError
+from modules.Bitfinex import Bitfinex, BitfinexApiError
 import modules.Configuration as Config
 import modules.MaxToLend as MaxToLend
 import modules.Data as Data
@@ -43,7 +44,7 @@ end_date = Config.get('BOT', 'endDate')
 json_output_enabled = Config.has_option('BOT', 'jsonfile') and Config.has_option('BOT', 'jsonlogsize')
 
 log = Logger(Config.get('BOT', 'jsonfile', ''), Decimal(Config.get('BOT', 'jsonlogsize', -1)))
-api = Poloniex(Config.get("API", "apikey", None), Config.get("API", "secret", None))
+api = Bitfinex(Config.get("API", "apikey", None), Config.get("API", "secret", None))
 MaxToLend.init(Config, log)
 Data.init(api, log)
 Config.init(config_location, Data)
@@ -103,7 +104,7 @@ try:
             # Ignore all 5xx errors (server error) as we can't do anything about it (https://httpstatuses.com/)
             elif isinstance(ex, URLError):
                 print "Caught {0} from Poloniex, ignoring.".format(ex.message)
-            elif isinstance(ex, PoloniexApiError):
+            elif isinstance(ex, BitfinexApiError):
                 print "Caught {0} reading from Poloniex API, ignoring.".format(ex.message)
             else:
                 print traceback.format_exc()

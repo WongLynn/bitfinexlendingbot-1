@@ -21,6 +21,26 @@ PATH_ORDERBOOK = "book/%s"
 # HTTP request timeout in seconds
 TIMEOUT = 5.0
 
+class BitfinexApiError(Exception):
+    pass
+
+
+def create_time_stamp(datestr, formatting="%Y-%m-%d %H:%M:%S"):
+    return time.mktime(time.strptime(datestr, formatting))
+
+
+def post_process(before):
+    after = before
+
+    # Add timestamps if there isnt one but is a datetime
+    if 'return' in after:
+        if isinstance(after['return'], list):
+            for x in xrange(0, len(after['return'])):
+                if isinstance(after['return'][x], dict):
+                    if 'datetime' in after['return'][x] and 'timestamp' not in after['return'][x]:
+                        after['return'][x]['timestamp'] = float(create_time_stamp(after['return'][x]['datetime']))
+
+    return after
 
 
 class Bitfinex:
